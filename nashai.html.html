@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚨 CRITICAL WARNING 🚨</title>
+    <style>
+        * { box-sizing: border-box; }
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #050505;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        #matrix-canvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; opacity: 0.15; transition: opacity 1s ease;
+        }
+
+        .scare-card {
+            position: relative; z-index: 10; width: 90%; max-width: 450px;
+            background: rgba(20, 20, 25, 0.85);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 0, 85, 0.4); border-radius: 24px;
+            padding: 35px 25px; text-align: center;
+            box-shadow: 0 0 40px rgba(255, 0, 85, 0.25);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .icon-box {
+            width: 80px; height: 80px;
+            background: linear-gradient(135deg, #ff0055, #ff5500);
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            margin: 0 auto 20px; font-size: 40px;
+            box-shadow: 0 0 20px rgba(255, 0, 85, 0.6);
+        }
+
+        h1 {
+            color: #ffffff; font-size: 26px; margin: 0 0 10px 0;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        .status-badge {
+            display: inline-block; background: rgba(255, 0, 85, 0.2);
+            color: #ff3377; border: 1px solid rgba(255, 0, 85, 0.4);
+            padding: 6px 16px; border-radius: 50px; font-size: 12px;
+            font-weight: bold; text-transform: uppercase; letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        .progress-container {
+            width: 100%; background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            height: 12px; border-radius: 10px; margin: 25px 0; overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 0%; height: 100%;
+            background: linear-gradient(90deg, #ff0055, #ff7700);
+            box-shadow: 0 0 10px #ff0055; transition: width 0.4s ease;
+        }
+
+        .log-text {
+            color: #ff3377; font-size: 16px; height: 50px;
+            font-family: 'Courier New', Courier, monospace; font-weight: bold;
+        }
+
+        /* Interactive Choice Buttons inside UI */
+        .btn-container {
+            display: none; justify-content: center; gap: 15px; margin-top: 15px;
+        }
+        .prank-btn {
+            background: #ff0055; color: white; border: none;
+            padding: 10px 25px; font-size: 14px; font-weight: bold;
+            border-radius: 8px; cursor: pointer; min-width: 100px;
+            box-shadow: 0 4px 10px rgba(255, 0, 85, 0.3);
+        }
+        .prank-btn:hover { background: #ff2277; }
+
+        #final-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 20; background: radial-gradient(circle, #15001c 0%, #05050a 100%);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 1.2s ease;
+            padding: 30px; text-align: center;
+        }
+
+        #final-screen.active { opacity: 1; pointer-events: auto; }
+        .big-message {
+            color: #00ffaa; font-size: 38px; font-weight: 800; margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(0, 255, 170, 0.6);
+        }
+        .sub-message {
+            color: #ffffff; font-size: 26px; font-weight: 600;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+            animation: float-text 3s ease-in-out infinite alternate;
+        }
+        @keyframes float-text { 0% { transform: translateY(0px); } 100% { transform: translateY(-10px); } }
+    </style>
+</head>
+<body>
+
+    <canvas id="matrix-canvas"></canvas>
+
+    <div class="scare-card" id="main-card">
+        <div class="icon-box">⚠️</div>
+        <h1>SYSTEM COMPROMISED</h1>
+        <div class="status-badge" id="badge">Scanning...</div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+
+        <div class="log-text" id="log">Initializing hardware audit layer...</div>
+        
+        <!-- Built-in unblockable response prompt buttons -->
+        <div class="btn-container" id="btn-box">
+            <button class="prank-btn" onclick="handleChoice(true)">YES</button>
+            <button class="prank-btn" onclick="handleChoice(false)">NO</button>
+        </div>
+    </div>
+
+    <div id="final-screen">
+        <div class="big-message">Script closing! Please give your friend a premium treat to fix this bug. Bye Aliya! 😂👋</div>
+        <div class="sub-message">and remember... you are lucky to have Zain as a frnd! 😉✨</div>
+    </div>
+
+    <script>
+        // Matrix Background Core
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        resizeCanvas();
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789☠️⚠️☣️🔥';
+        const alphabet = letters.split('');
+        const fontSize = 16;
+        const rainDrops = Array.from({ length: canvas.width / fontSize }).fill(1);
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(5, 5, 5, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ff0055'; ctx.font = fontSize + 'px monospace';
+            for (let i = 0; i < rainDrops.length; i++) {
+                const text = alphabet[Math.floor(Math.random() * alphabet.length)];
+                ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+                if (rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) rainDrops[i] = 0;
+                rainDrops[i]++;
+            }
+        }
+        const matrixInterval = setInterval(drawMatrix, 30);
+
+        // State Machine Controller
+        const log = document.getElementById('log');
+        const progress = document.getElementById('progress');
+        const btnBox = document.getElementById('btn-box');
+        const mainCard = document.getElementById('main-card');
+        const finalScreen = document.getElementById('final-screen');
+
+        let currentStage = 0;
+
+        const systemScript = [
+            { p: 10, t: "Warning: Pgl Nashai Detector has scanned this device.", type: "notice" },
+            { p: 25, t: "Result: 100% Pgl Nashai detected nearby.", type: "notice" },
+            { p: 40, t: "Is your name Aliya?", type: "question", id: "identity" },
+            { p: 55, t: "Initiating automatic brain cell search...", type: "notice" },
+            { p: 70, t: "Error 404: Brain cells not found!", type: "notice" },
+            { p: 85, t: "Do you talk to walls when you are bored?", type: "question", id: "walls" },
+            { p: 95, t: "Sending 5000 volts of virtual logic to target brain...", type: "notice" },
+            { p: 100, t: "Failed: Target brain completely empty. Nothing to shock!", type: "end" }
+        ];
+
+        function stepEngine() {
+            if (currentStage >= systemScript.length) return;
+            const stage = systemScript[currentStage];
+            
+            progress.style.width = stage.p + "%";
+            log.textContent = stage.t;
+
+            if (stage.type === "notice") {
+                btnBox.style.display = "none";
+                setTimeout(() => {
+                    currentStage++;
+                    stepEngine();
+                }, 2500);
+            } else if (stage.type === "question") {
+                // Shows clean on-screen HTML buttons instead of browser popup block windows
+                btnBox.style.display = "flex";
+            } else if (stage.type === "end") {
+                btnBox.style.display = "none";
+                setTimeout(() => {
+                    clearInterval(matrixInterval);
+                    canvas.style.opacity = "0";
+                    mainCard.style.opacity = "0";
+                    mainCard.style.transform = "scale(0.8)";
+                    setTimeout(() => {
+                        mainCard.style.display = "none";
+                        finalScreen.classList.add('active');
+                    }, 800);
+                }, 3000);
+            }
+        }
+
+        function handleChoice(isYes) {
+            btnBox.style.display = "none";
+            const stage = systemScript[currentStage];
+            
+            if (stage.id === "identity") {
+                log.textContent = isYes ? "System Confirmed: Aliya is the ultimate pgl nashai." : "Lying detected! The database knows you are Aliya.";
+            } else if (stage.id === "walls") {
+                log.textContent = isYes ? "Aha! The walls told us you talk too much anyway." : "Denial confirmed! Sign of a true pgl.";
+            }
+
+            setTimeout(() => {
+                currentStage++;
+                stepEngine();
+            }, 2500);
+        }
+
+        setTimeout(stepEngine, 1000);
+    </script>
+</body>
+</html>
